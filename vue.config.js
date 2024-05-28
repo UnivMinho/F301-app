@@ -1,5 +1,5 @@
 module.exports = {
-  publicPath: process.env.NODE_ENV === 'production' ? '/F301.APP/' : '/',
+  publicPath: process.env.NODE_ENV === 'production' ? '/F301.APP/src/App.vue/' : '/',
   pwa: {
     name: 'appvuejs',
     themeColor: '#4DBA87',
