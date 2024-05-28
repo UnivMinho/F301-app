@@ -15,7 +15,8 @@
                   <span>Eliminar</span>
                   <div class="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <path d="M3 6v18h18V6H3zm16 16H5V8h14v14zm-3-10v8h-2v-8h2zm-4 0v8h-2v-8h2zm-4 0v8H6v-8h2zm1-6h4v2h-4V6z"/>
+                      <path
+                        d="M3 6v18h18V6H3zm16 16H5V8h14v14zm-3-10v8h-2v-8h2zm-4 0v8h-2v-8h2zm-4 0v8H6v-8h2zm1-6h4v2h-4V6z" />
                     </svg>
                   </div>
                 </button>
@@ -45,6 +46,8 @@ export default {
   data() {
     return {
       multimedia: [],
+      loggedInUser: this.$root.loggedInUser,
+      currentDate: new Date().toISOString().split('T')[0], 
     };
   },
   mounted() {
@@ -59,14 +62,34 @@ export default {
       const reader = new FileReader();
       reader.onload = (e) => {
         const newMedia = {
+          id: this.generateUniqueId(),
           image: e.target.result,
           name: file.name,
           type: file.type.startsWith('image') ? 'Imagem' : 'Vídeo'
         };
+
+        const storedInitiatives = JSON.parse(localStorage.getItem('currentInitiative'));
+        const loggedInUsername = this.formatName(this.loggedInUser.username);
+
+        if (storedInitiatives) {
+          const initiative = storedInitiatives.find(initiative => {
+            return initiative.profissional === loggedInUsername && initiative.dia === this.currentDate;
+          });
+
+          if (initiative) {
+            initiative.imagensIds.push(newMedia.id);
+
+            localStorage.setItem('currentInitiative', JSON.stringify(storedInitiatives));
+          }
+        }
+
         this.multimedia.push(newMedia);
         this.saveToLocalStorage();
       };
       reader.readAsDataURL(file);
+    },
+    generateUniqueId() {
+      return Math.random().toString(36).substr(2, 9); 
     },
     saveToLocalStorage() {
       localStorage.setItem('multimedia', JSON.stringify(this.multimedia));
@@ -79,18 +102,22 @@ export default {
     },
     removeMedia(index) {
       this.multimedia.splice(index, 1); // Remove o item do array
-      this.saveToLocalStorage(); // Atualiza o localStorage
+      this.saveToLocalStorage();
+    },
+    formatName(name) {
+      return name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
   }
 };
 </script>
+
 
 <style scoped>
 .button-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px; /* Adicione um pouco de espaço */
+  padding: 10px;
 }
 
 .our-team {
@@ -99,8 +126,8 @@ export default {
   margin-bottom: 20px;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 100px 8px rgba(0,0,0,0.1);
-  padding-bottom: 0px; /* Espaço para o botão */
+  box-shadow: 0 100px 8px rgba(0, 0, 0, 0.1);
+  padding-bottom: 0px;
 }
 
 .our-team .picture img {
@@ -109,6 +136,7 @@ export default {
   object-fit: cover;
   display: block;
 }
+
 .main-container {
   text-align: center;
   padding: 20px;
@@ -136,6 +164,7 @@ export default {
   border: 2px dashed #ccc;
   padding: 20px;
   margin: 20px auto;
+  margin-bottom: 3rem;
   width: 300px;
   height: 300px;
   display: flex;
@@ -167,7 +196,7 @@ export default {
   margin-bottom: 20px;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .our-team .picture img {
@@ -179,7 +208,7 @@ export default {
 
 .remove-icon-container {
   text-align: center;
-  margin-top: -20px; /* Adjust this value as needed */
+  margin-top: -20px;
 }
 
 .remove-icon {
@@ -222,12 +251,15 @@ export default {
   -webkit-tap-highlight-color: transparent;
   -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
+
 .button:active {
   --scale: 0.95;
 }
+
 .button:hover {
   --b: var(--background-hover);
 }
+
 .button .icon,
 .button span {
   display: inline-block;
@@ -235,6 +267,7 @@ export default {
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
+
 .button .icon {
   width: 24px;
   height: 24px;
@@ -243,6 +276,7 @@ export default {
   margin-right: 8px;
   color: var(--text);
 }
+
 .button .icon svg {
   width: 96px;
   height: 96px;
@@ -257,5 +291,4 @@ export default {
   -webkit-animation: var(--name, var(--name-top, none)) 2200ms ease forwards;
   animation: var(--name, var(--name-top, none)) 2200ms ease forwards;
 }
-
 </style>

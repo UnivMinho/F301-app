@@ -25,7 +25,7 @@ const routes = [
       { path: '/manageInitiatives', name: 'manageInititives', component: ManageInitiatives },
       { path: '/dashboard', name: 'dashboard', component: DashboardApp },
       { path: '/historyPage', name: 'historyPage', component: HistoryPage }
-      // Add more routes as needed
+     
     ]
   }
 ];

@@ -21,7 +21,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -31,8 +30,14 @@ export default {
   data() {
     return {
       profissionais: [],
-      currentDate: new Date().toISOString().split('T')[0], // Get current date in YYYY-MM-DD format
+      initiatives: [],
+      currentDate: new Date().toISOString().split('T')[0],
     };
+  },
+  computed: {
+    loggedInUser() {
+      return this.$root.loggedInUser;
+    }
   },
   mounted() {
     this.loadProfissionais();
@@ -40,22 +45,29 @@ export default {
   methods: {
     loadProfissionais() {
       const storedInitiatives = JSON.parse(localStorage.getItem('currentInitiative'));
-      if (storedInitiatives && Array.isArray(storedInitiatives.listaParticipantes)) {
-        this.profissionais = storedInitiatives.listaParticipantes.map(p => ({
-          ...p,
-          present: p.present !== undefined ? p.present : false  // Ensure the 'present' field exists
-        }));
+      const loggedInUsername = this.formatName(this.loggedInUser.username);
+      console.log("formatado: ", loggedInUsername);
+      if (storedInitiatives) {
+        const filteredInitiatives = storedInitiatives.filter(initiative => {
+          return initiative.profissional === loggedInUsername && initiative.dia === this.currentDate;
+        });
+
+        if (filteredInitiatives.length > 0) {
+          this.profissionais = filteredInitiatives[0].voluntarios.map(p => ({
+            ...p,
+            present: p.present !== undefined ? p.present : false // Ensure the 'present' field exists
+          }));
+        }
       }
       console.log("PROFISSIONAIS: ", this.profissionais);
     },
+    formatName(name) {
+      return name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    },
     saveData() {
-      // Retrieve the entire initiative from localStorage
       const storedInitiatives = JSON.parse(localStorage.getItem('currentInitiative'));
-
-      // Update the listaParticipantes array within the initiative with the modified participants
-      storedInitiatives.listaParticipantes = this.profissionais;
-
-      // Store the updated initiatives back into localStorage
+      const initiative = storedInitiatives.find(initiative => initiative.dia === this.currentDate);
+      initiative.voluntarios = this.profissionais;
       localStorage.setItem('currentInitiative', JSON.stringify(storedInitiatives));
     },
     markPresent(profissional, index) {
@@ -65,8 +77,9 @@ export default {
     markAbsent(profissional, index) {
       this.profissionais[index].present = false;
       this.saveData();
-    }
-  }
+    },
+  },
+
 };
 </script>
 
@@ -82,7 +95,7 @@ export default {
 }
 
 .our-team {
-  padding: 10px 0 10px;
+  padding: 15px 0 10px;
   background-color: #596a6d;
   text-align: center;
   overflow: hidden;
@@ -90,24 +103,25 @@ export default {
   border-radius: 30px;
   transition: transform 0.3s ease-in-out;
   background-color: #001D23;
+  margin-bottom: 2rem;
 }
 
-.our-team h3{
-  color:aliceblue;
+.our-team h3 {
+  color: aliceblue;
 }
 
 .our-team .picture {
   display: inline-block;
-  height: 130px;
-  width: 120px;
-  margin-bottom: 50px;
+  height: 160px;
+  width: 140px; /* Ajuste para tornar a imagem mais arredondada */
+  margin-bottom: 20px;
   z-index: 1;
   position: relative;
-  
 }
 
 .our-team .picture img {
-  width: 125px;
+  width: 100%; /* Ajuste a largura para ocupar 100% do contêiner pai */
+  height: 100%; /* Ajuste a altura para ocupar 100% do contêiner pai */
   border-radius: 50%;
   transform: scale(1);
   transition: all 0.9s ease 0s;
@@ -135,6 +149,6 @@ export default {
 
 .container {
   padding-top: 20px;
-  
+
 }
 </style>

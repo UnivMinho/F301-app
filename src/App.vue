@@ -19,7 +19,7 @@ export default {
   }
 }
 
-//teste github pages
+
 </script>
 
 <style>
