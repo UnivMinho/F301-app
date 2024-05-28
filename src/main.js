@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import App from '../App.vue'
+import App from './App.vue'
 import router from './router.js'; // Correct import path
 import './css/bootstrap.min.css';
 import './css/style.css';
